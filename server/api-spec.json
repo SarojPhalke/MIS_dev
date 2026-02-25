@@ -1,0 +1,347 @@
+{
+  "baseUrl": "/api",
+  "endpoints": [
+    {
+      "name": "Register User",
+      "description": "Create a new user (intended for admin use only).",
+      "method": "POST",
+      "path": "/auth/register",
+      "authRequired": false,
+      "rbac": {
+        "requiredRole": "admin",
+        "note": "Enforce via authenticate + authorizeRole(['admin']) when RBAC is enabled."
+      },
+      "requestBody": {
+        "contentType": "application/json",
+        "example": {
+          "full_name": "Jane Admin",
+          "email": "jane.admin@example.com",
+          "password": "StrongPass123!"
+        }
+      },
+      "successResponse": {
+        "status": 201,
+        "example": {
+          "success": true,
+          "message": "User registered successfully",
+          "data": {
+            "message": "User registered successfully",
+            "user": {
+              "id": "uuid",
+              "full_name": "Jane Admin",
+              "email": "jane.admin@example.com",
+              "role": "operator"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "description": "Authenticate user and return JWT token.",
+      "method": "POST",
+      "path": "/auth/login",
+      "authRequired": false,
+      "requestBody": {
+        "contentType": "application/json",
+        "example": {
+          "email": "jane.admin@example.com",
+          "password": "StrongPass123!"
+        }
+      },
+      "successResponse": {
+        "status": 200,
+        "example": {
+          "success": true,
+          "message": "Login successful",
+          "data": {
+            "token": "jwt-token",
+            "user": {
+              "id": "uuid",
+              "full_name": "Jane Admin",
+              "email": "jane.admin@example.com",
+              "role": "operator"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "List Users",
+      "description": "Get list of users (ADMIN, MANAGER).",
+      "method": "GET",
+      "path": "/users",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["ADMIN", "MANAGER"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    },
+    {
+      "name": "List Roles",
+      "description": "Get list of roles (ADMIN only).",
+      "method": "GET",
+      "path": "/roles",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["ADMIN"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    },
+    {
+      "name": "Create Asset",
+      "description": "Create a new asset in assets_master.",
+      "method": "POST",
+      "path": "/assets",
+      "authRequired": true,
+      "rbac": {
+        "functionCode": "ASSET_CREATE"
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      },
+      "requestBody": {
+        "contentType": "application/json",
+        "example": {
+          "asset_code": "MCH-001",
+          "asset_name": "Press Machine 1",
+          "asset_type": "PRESS",
+          "location": "PLANT1",
+          "criticality": "HIGH",
+          "manufacturer": "OEM-X"
+        }
+      }
+    },
+    {
+      "name": "Log Breakdown",
+      "description": "Log a new breakdown entry for an asset.",
+      "method": "POST",
+      "path": "/breakdowns",
+      "authRequired": true,
+      "rbac": {
+        "functionCode": "BREAKDOWN_LOG"
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      },
+      "requestBody": {
+        "contentType": "application/json",
+        "example": {
+          "asset_id": "uuid-or-id",
+          "breakdown_description": "Hydraulic leak detected",
+          "reported_by_role": "OPERATOR",
+          "start_time": "2026-02-25T10:30:00Z"
+        }
+      }
+    },
+    {
+      "name": "List PM Schedules",
+      "description": "List preventive maintenance schedules.",
+      "method": "GET",
+      "path": "/pm",
+      "authRequired": true,
+      "rbac": {
+        "functionCode": "PM_VIEW"
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    },
+    {
+      "name": "List Spares",
+      "description": "List spare parts inventory.",
+      "method": "GET",
+      "path": "/spares",
+      "authRequired": true,
+      "rbac": {
+        "functionCode": "SPARES_VIEW"
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    },
+    {
+      "name": "Dashboard KPIs",
+      "description": "Get KPI dashboard data.",
+      "method": "GET",
+      "path": "/dashboard",
+      "authRequired": true,
+      "rbac": {
+        "functionCode": "DASHBOARD_VIEW"
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    },
+    {
+      "name": "User Stats",
+      "description": "Get total user count and count per role (admin only).",
+      "method": "GET",
+      "path": "/users/stats",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["admin"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      },
+      "successResponse": {
+        "status": 200,
+        "example": {
+          "success": true,
+          "message": "User statistics fetched successfully",
+          "data": {
+            "totalUsers": 42,
+            "perRole": [
+              { "role": "operator", "count": 20 },
+              { "role": "engineer", "count": 10 },
+              { "role": "manager", "count": 5 },
+              { "role": "admin", "count": 7 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "List Users with Effective Functions",
+      "description": "Get list of users with their effective functions (role + overrides). Admin only.",
+      "method": "GET",
+      "path": "/users",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["admin"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    },
+    {
+      "name": "Update User Role",
+      "description": "Update a user's role (admin only).",
+      "method": "PUT",
+      "path": "/users/:id/role",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["admin"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      },
+      "requestBody": {
+        "contentType": "application/json",
+        "example": {
+          "role": "engineer"
+        }
+      }
+    },
+    {
+      "name": "Delete User",
+      "description": "Delete a user (admin only).",
+      "method": "DELETE",
+      "path": "/users/:id",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["admin"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    },
+    {
+      "name": "List Functions",
+      "description": "Get all available functions in the system.",
+      "method": "GET",
+      "path": "/functions",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["admin"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    },
+    {
+      "name": "Get Role Functions",
+      "description": "Get functions assigned to a given role.",
+      "method": "GET",
+      "path": "/functions/roles/:role/functions",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["admin"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    },
+    {
+      "name": "Replace Role Functions",
+      "description": "Replace all functions assigned to a role (uses transaction).",
+      "method": "PUT",
+      "path": "/functions/roles/:role/functions",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["admin"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      },
+      "requestBody": {
+        "contentType": "application/json",
+        "example": {
+          "functionIds": [1, 2, 3]
+        }
+      }
+    },
+    {
+      "name": "Get User Effective Functions",
+      "description": "Get effective permissions for a user (role + overrides merged).",
+      "method": "GET",
+      "path": "/users/:id/functions",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["admin"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    },
+    {
+      "name": "Upsert User Function Override",
+      "description": "Add or update a user-specific function override (UPSERT).",
+      "method": "PUT",
+      "path": "/users/:id/functions",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["admin"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      },
+      "requestBody": {
+        "contentType": "application/json",
+        "example": {
+          "functionId": 1,
+          "allowed": true
+        }
+      }
+    },
+    {
+      "name": "Delete User Function Override",
+      "description": "Remove a user-specific function override.",
+      "method": "DELETE",
+      "path": "/users/:id/functions/:functionId",
+      "authRequired": true,
+      "rbac": {
+        "roles": ["admin"]
+      },
+      "requestHeaders": {
+        "Authorization": "Bearer <jwt-token>"
+      }
+    }
+  ]
+}
+
