@@ -11,8 +11,13 @@ const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Backwards compatible mapping:
+    // - New tokens: { id, role }
+    // - Old tokens: { sub, role_id, username }
     req.user = {
-      id: decoded.sub,
+      id: decoded.id || decoded.sub,
+      role: decoded.role,
       roleId: decoded.role_id,
       username: decoded.username,
     };

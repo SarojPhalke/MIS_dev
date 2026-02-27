@@ -1,18 +1,24 @@
 const express = require('express');
 
 const { authenticate } = require('../../middlewares/auth.middleware');
-const { authorizeFunction } = require('../../middlewares/rbac.middleware');
-const { createAssetController } = require('./asset.controller');
+const {
+  createAssetController,
+  listAssetsController,
+  getAssetStatsController,
+  updateAssetController,
+} = require('./asset.controller');
 
 const router = express.Router();
 
-// Example function code for RBAC: ASSET_CREATE
-router.post(
-  '/',
-  authenticate,
-  authorizeFunction('ASSET_CREATE'),
-  createAssetController
-);
+// View assets + stats (permission checked inside service: view_assets)
+router.get('/', authenticate, listAssetsController);
+router.get('/stats', authenticate, getAssetStatsController);
+
+// Create asset (permission checked inside service: create_asset)
+router.post('/', authenticate, createAssetController);
+
+// Update asset (permission checked inside service: update_asset)
+router.put('/:id', authenticate, updateAssetController);
 
 module.exports = router;
 

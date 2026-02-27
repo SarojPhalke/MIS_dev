@@ -4,12 +4,25 @@ const { getDb } = require('../config');
 const authorizeRole = (allowedRoles = []) => {
   return async (req, res, next) => {
     try {
-      if (!req.user || !req.user.roleId) {
-        return res.status(403).json({ success: false, message: 'Access denied' });
-      }
-
       if (allowedRoles.length === 0) {
         return next();
+      }
+
+      // Prefer JWT role (role_enum) if present (new auth flow)
+      if (req.user && req.user.role) {
+        const normalizedAllowed = allowedRoles.map((r) => String(r).toLowerCase());
+        const role = String(req.user.role).toLowerCase();
+
+        if (!normalizedAllowed.includes(role)) {
+          return res.status(403).json({ success: false, message: 'Insufficient role permissions' });
+        }
+
+        return next();
+      }
+
+      // Fallback to legacy role_id -> roles table (old RBAC design)
+      if (!req.user || !req.user.roleId) {
+        return res.status(403).json({ success: false, message: 'Access denied' });
       }
 
       const db = getDb();
