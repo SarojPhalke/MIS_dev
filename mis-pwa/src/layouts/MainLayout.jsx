@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usePermissions } from '../context/PermissionContext';
 
 const navItemsByRole = {
   operator: ['dashboard', 'assets', 'breakdown'],
@@ -23,7 +24,21 @@ const allNavItems = [
 
 const MainLayout = () => {
   const { user, logout } = useAuth();
+  const { hasPermission, loading: permLoading } = usePermissions();
   const allowedKeys = navItemsByRole[user?.role] || [];
+
+  const visibleNavItems = allNavItems.filter((item) => {
+    if (!allowedKeys.includes(item.key)) return false;
+    if (item.key === 'assets') {
+      if (permLoading) return false;
+      return hasPermission('view_asset_module');
+    }
+    if (item.key === 'breakdown') {
+      if (permLoading) return false;
+      return hasPermission('view_bd_module');
+    }
+    return true;
+  });
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100">
@@ -33,21 +48,19 @@ const MainLayout = () => {
           <p className="text-xs text-slate-400">Maintenance Information System</p>
         </div>
         <nav className="flex-1 px-2 py-4 space-y-1">
-          {allNavItems
-            .filter((item) => allowedKeys.includes(item.key))
-            .map((item) => (
-              <NavLink
-                key={item.key}
-                to={item.to}
-                className={({ isActive }) =>
-                  `block px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive ? 'bg-slate-800 text-accent' : 'text-slate-300 hover:bg-slate-800'
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
+          {visibleNavItems.map((item) => (
+            <NavLink
+              key={item.key}
+              to={item.to}
+              className={({ isActive }) =>
+                `block px-3 py-2 rounded-md text-sm font-medium ${
+                  isActive ? 'bg-slate-800 text-accent' : 'text-slate-300 hover:bg-slate-800'
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
       </aside>
 
