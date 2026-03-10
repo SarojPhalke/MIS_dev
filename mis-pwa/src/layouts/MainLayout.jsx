@@ -37,6 +37,10 @@ const MainLayout = () => {
       if (permLoading) return false;
       return hasPermission('view_bd_module');
     }
+    if (item.key === 'spares') {
+      if (permLoading) return false;
+      return hasPermission('view_spares_module');
+    }
     return true;
   });
 

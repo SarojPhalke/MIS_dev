@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const http = require('http');
 const app = require('./app');
+const { startPmOverdueJob } = require('./jobs/pmOverdue.job');
 
 const PORT = process.env.PORT || 5000;
 
@@ -10,6 +11,9 @@ const server = http.createServer(app);
 server.listen(PORT, () => {
   // Simple startup log; in production you may replace with a proper logger
   console.log(`MIS backend running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  
+  // Start scheduled jobs
+  startPmOverdueJob();
 });
 
 process.on('unhandledRejection', (err) => {

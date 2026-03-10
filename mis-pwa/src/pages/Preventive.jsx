@@ -1,34 +1,52 @@
 import React from 'react';
-
-const mockPm = [
-  { id: 1, asset: 'Press Machine 1', frequency: 'Weekly', nextDue: '2026-03-01' },
-  { id: 2, asset: 'CNC Machine 2', frequency: 'Monthly', nextDue: '2026-03-10' }
-];
+import { Routes, Route, Navigate } from 'react-router-dom';
+import PMDashboard from '../modules/pm/PMDashboard';
+import PMSchedule from '../modules/pm/PMSchedule';
+import PMEntryList from '../modules/pm/PMEntryList';
+import PMOperatorEntry from '../modules/pm/PMOperatorEntry';
+import PMEngineerAction from '../modules/pm/PMEngineerAction';
+import PMCompliance from '../modules/pm/PMCompliance';
+import { usePermissions } from '../context/PermissionContext';
 
 const Preventive = () => {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-slate-100">Preventive Maintenance</h2>
-      <p className="text-sm text-slate-400">
-        Upcoming preventive maintenance activities. (Mock data)
-      </p>
+  const { hasPermission, loading } = usePermissions();
 
-      <div className="space-y-2">
-        {mockPm.map((pm) => (
-          <div
-            key={pm.id}
-            className="rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-xs"
-          >
-            <p className="font-medium text-slate-100">{pm.asset}</p>
-            <p className="text-slate-400">
-              Frequency: {pm.frequency} · Next Due: {pm.nextDue}
-            </p>
-          </div>
-        ))}
+  if (loading) {
+    return (
+      <div className="flex min-h-[200px] items-center justify-center text-xs text-slate-400">
+        Loading permissions...
       </div>
-    </div>
+    );
+  }
+
+  // Check if user has any PM permissions
+  const hasAnyPmPermission =
+    hasPermission('view_pm_schedule') ||
+    hasPermission('create_pm_schedule') ||
+    hasPermission('view_pm_entry') ||
+    hasPermission('create_pm_entry') ||
+    hasPermission('create_pm_engineer') ||
+    hasPermission('view_pm_compliance');
+
+  if (!hasAnyPmPermission) {
+    return (
+      <div className="rounded-md border border-slate-800 bg-slate-900 p-4 text-sm text-slate-200">
+        You do not have access to Preventive Maintenance module.
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route index element={<PMDashboard />} />
+      <Route path="schedule" element={<PMSchedule />} />
+      <Route path="entries" element={<PMEntryList />} />
+      <Route path="entry" element={<PMOperatorEntry />} />
+      <Route path="engineer/:pm_operator_id" element={<PMEngineerAction />} />
+      <Route path="compliance" element={<PMCompliance />} />
+      <Route path="*" element={<Navigate to="/preventive" replace />} />
+    </Routes>
   );
 };
 
 export default Preventive;
-
