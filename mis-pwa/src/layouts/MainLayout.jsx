@@ -41,6 +41,10 @@ const MainLayout = () => {
       if (permLoading) return false;
       return hasPermission('view_spares_module');
     }
+    if (item.key === 'utilities') {
+      if (permLoading) return false;
+      return hasPermission('view_utility_logs');
+    }
     return true;
   });
 

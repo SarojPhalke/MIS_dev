@@ -8,6 +8,7 @@ const assetRoutes = require('../modules/assets/asset.routes');
 const breakdownRoutes = require('../modules/breakdown/breakdown.routes');
 const preventiveRoutes = require('../modules/preventive/preventive.routes');
 const sparesRoutes = require('../modules/spares/spares.routes');
+const utilityRoutes = require('../modules/utility/utility.routes');
 const dashboardRoutes = require('../modules/dashboard/dashboard.routes');
 
 const router = express.Router();
@@ -27,6 +28,7 @@ router.use('/assets', assetRoutes);
 router.use('/breakdowns', breakdownRoutes);
 router.use('/pm', preventiveRoutes);
 router.use('/spares', sparesRoutes);
+router.use('/utilities', utilityRoutes);
 router.use('/dashboard', dashboardRoutes);
 
 module.exports = router;

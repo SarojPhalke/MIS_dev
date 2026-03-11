@@ -26,7 +26,7 @@ const App = () => {
           <Route path="/preventive/*" element={<Preventive />} />
           <Route path="/breakdown" element={<Breakdown />} />
           <Route path="/spares" element={<Spares />} />
-          <Route path="/utilities" element={<Utilities />} />
+          <Route path="/utilities/*" element={<Utilities />} />
           <Route path="/kpi" element={<KPI />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/users" element={<UserManagement />} />
