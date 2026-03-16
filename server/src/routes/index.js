@@ -10,6 +10,7 @@ const preventiveRoutes = require('../modules/preventive/preventive.routes');
 const sparesRoutes = require('../modules/spares/spares.routes');
 const utilityRoutes = require('../modules/utility/utility.routes');
 const dashboardRoutes = require('../modules/dashboard/dashboard.routes');
+const kpiRoutes = require('../modules/kpi/kpi.routes');
 
 const router = express.Router();
 
@@ -30,6 +31,7 @@ router.use('/pm', preventiveRoutes);
 router.use('/spares', sparesRoutes);
 router.use('/utilities', utilityRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/kpi', kpiRoutes);
 
 module.exports = router;
 

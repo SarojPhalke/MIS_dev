@@ -45,6 +45,10 @@ const MainLayout = () => {
       if (permLoading) return false;
       return hasPermission('view_utility_logs');
     }
+    if (item.key === 'kpi') {
+      if (permLoading) return false;
+      return hasPermission('view_kpi_dashboard');
+    }
     return true;
   });
 
