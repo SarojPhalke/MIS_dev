@@ -372,6 +372,22 @@ const updateBreakdownStatusService = async (userId, breakdownId, payload) => {
   }
 };
 
+const listResponsiblePeopleService = async (userId) => {
+  await assertPermission(userId, 'update_bd_status');
+
+  const db = getDb();
+  const query = `
+    SELECT
+      id,
+      full_name
+    FROM users
+    ORDER BY full_name ASC
+  `;
+
+  const { rows } = await db.query(query);
+  return rows || [];
+};
+
 module.exports = {
   userHasPermission,
   listBreakdownsService,
@@ -379,4 +395,5 @@ module.exports = {
   createBreakdownService,
   updateBreakdownMemoService,
   updateBreakdownStatusService,
+  listResponsiblePeopleService,
 };

@@ -5,6 +5,7 @@ const {
   createBreakdownService,
   updateBreakdownMemoService,
   updateBreakdownStatusService,
+  listResponsiblePeopleService,
 } = require('./breakdown.service');
 
 const listBreakdownsController = async (req, res, next) => {
@@ -64,10 +65,21 @@ const updateBreakdownStatusController = async (req, res, next) => {
   }
 };
 
+const listResponsiblePeopleController = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const people = await listResponsiblePeopleService(userId);
+    return res.status(200).json({ success: true, data: people });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 module.exports = {
   listBreakdownsController,
   getBreakdownStatsController,
   createBreakdownController,
   updateBreakdownMemoController,
   updateBreakdownStatusController,
+  listResponsiblePeopleController,
 };

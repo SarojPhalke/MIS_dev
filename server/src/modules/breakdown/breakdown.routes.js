@@ -7,6 +7,7 @@ const {
   getBreakdownStatsController,
   updateBreakdownMemoController,
   updateBreakdownStatusController,
+  listResponsiblePeopleController,
 } = require('./breakdown.controller');
 
 const router = express.Router();
@@ -23,5 +24,8 @@ router.put('/:id/memo', authenticate, updateBreakdownMemoController);
 
 // Update breakdown status (permission checked inside service: update_bd_status)
 router.put('/:id/status', authenticate, updateBreakdownStatusController);
+
+// Dropdown data for "Responsible Person" field in the UI (permission checked inside service: update_bd_status)
+router.get('/responsible-people', authenticate, listResponsiblePeopleController);
 
 module.exports = router;

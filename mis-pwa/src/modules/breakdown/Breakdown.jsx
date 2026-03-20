@@ -80,6 +80,12 @@ const Breakdown = () => {
   const [selectedBreakdown, setSelectedBreakdown] = useState(null);
   const [saving, setSaving] = useState(false);
 
+  const [assetOptions, setAssetOptions] = useState([]);
+  const [assetsLoading, setAssetsLoading] = useState(false);
+
+  const [responsiblePeople, setResponsiblePeople] = useState([]);
+  const [responsiblePeopleLoading, setResponsiblePeopleLoading] = useState(false);
+
   const [addFormData, setAddFormData] = useState({
     bd_code: '',
     shift_id: '',
@@ -107,6 +113,51 @@ const Breakdown = () => {
     bd_status: 'open',
     responsible_person: '',
   });
+
+  const fetchAssetOptions = async () => {
+    setAssetsLoading(true);
+    try {
+      // Reuse existing assets endpoint; it reads from `asset_master`.
+      const res = await client.get('/assets');
+      const list = res.data?.data ?? res.data;
+      const codes = Array.isArray(list)
+        ? list.map((a) => a.asset_code).filter(Boolean)
+        : [];
+      setAssetOptions(codes);
+    } catch (err) {
+      console.error('Asset options load error:', err);
+      setAssetOptions([]);
+      alert(err?.response?.data?.message || 'Failed to load asset codes');
+    } finally {
+      setAssetsLoading(false);
+    }
+  };
+
+  const ensureAssetOptionsLoaded = () => {
+    if (assetOptions.length || assetsLoading) return;
+    fetchAssetOptions();
+  };
+
+  const fetchResponsiblePeople = async () => {
+    setResponsiblePeopleLoading(true);
+    try {
+      const res = await client.get('/breakdowns/responsible-people');
+      const list = res.data?.data ?? res.data;
+      const people = Array.isArray(list) ? list : [];
+      setResponsiblePeople(people);
+    } catch (err) {
+      console.error('Responsible people load error:', err);
+      setResponsiblePeople([]);
+      alert(err?.response?.data?.message || 'Failed to load responsible people');
+    } finally {
+      setResponsiblePeopleLoading(false);
+    }
+  };
+
+  const ensureResponsiblePeopleLoaded = () => {
+    if (responsiblePeople.length || responsiblePeopleLoading) return;
+    fetchResponsiblePeople();
+  };
 
   const fetchStats = async () => {
     const res = await client.get('/breakdowns/stats');
@@ -162,6 +213,7 @@ const Breakdown = () => {
   }, [statusFilter]);
 
   const openAddModal = () => {
+    ensureAssetOptionsLoaded();
     setAddFormData({
       bd_code: '',
       shift_id: '',
@@ -202,6 +254,7 @@ const Breakdown = () => {
       return;
     }
 
+    ensureResponsiblePeopleLoaded();
     setSelectedBreakdown(breakdown);
     setStatusFormData({
       bd_status: breakdown.bd_status || 'open',
@@ -574,12 +627,21 @@ const Breakdown = () => {
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-300">Asset Code *</label>
-                <input
+                <select
                   value={addFormData.asset_code}
                   onChange={onChange('asset_code')}
                   required
                   className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-100 focus:border-accent focus:outline-none"
-                />
+                >
+                  <option value="" disabled>
+                    {assetsLoading ? 'Loading assets...' : 'Select asset code'}
+                  </option>
+                  {assetOptions.map((code) => (
+                    <option key={code} value={code}>
+                      {code}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-300">BD Status *</label>
@@ -763,11 +825,29 @@ const Breakdown = () => {
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-300">Responsible Person</label>
-                <input
+                <select
                   value={statusFormData.responsible_person}
                   onChange={onStatusChange('responsible_person')}
                   className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-100 focus:border-accent focus:outline-none"
-                />
+                >
+                  <option value="" disabled>
+                    {responsiblePeopleLoading ? 'Loading users...' : 'Select responsible person'}
+                  </option>
+
+                  {/* If current value isn't in the loaded list yet, show the raw id to avoid blank selection */}
+                  {statusFormData.responsible_person &&
+                    !responsiblePeople.some((p) => p.id === statusFormData.responsible_person) && (
+                      <option value={statusFormData.responsible_person}>
+                        {statusFormData.responsible_person}
+                      </option>
+                    )}
+
+                  {(responsiblePeople || []).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.full_name || p.id}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
